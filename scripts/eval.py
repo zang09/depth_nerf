@@ -39,9 +39,7 @@ class ComputePSNR:
         config, pipeline, checkpoint_path = eval_setup(self.load_config)
         assert self.output_path.suffix == ".json"
         metrics_dict, images_dict_list = pipeline.get_average_eval_image_metrics()
-        self.output_path.parent.mkdir(parents=True, exist_ok=True)
-        self.output_images_path.mkdir(parents=True, exist_ok=True)
-
+        
         # Get the output and define the names to save to
         benchmark_info = {
             "experiment_name": config.experiment_name,
@@ -49,10 +47,16 @@ class ComputePSNR:
             "checkpoint": str(checkpoint_path),
             "results": metrics_dict,
         }
+        
         # Save output to output file
+        output_dir = self.load_config.parent
+        self.output_path = output_dir / self.output_path
+        self.output_path.parent.mkdir(parents=True, exist_ok=True)
         self.output_path.write_text(json.dumps(benchmark_info, indent=2), "utf8")
         CONSOLE.print(f"Saved results to: {self.output_path}")
 
+        self.output_images_path = output_dir / self.output_images_path
+        self.output_images_path.mkdir(parents=True, exist_ok=True)
         for idx, images_dict in enumerate(images_dict_list):
             for k, v in images_dict.items():
                 cv2.imwrite(
@@ -60,6 +64,10 @@ class ComputePSNR:
                     (v.cpu().numpy() * 255.0).astype(np.uint8)[..., ::-1],
                 )
         CONSOLE.print(f"Saved rendering results to: {self.output_images_path}")
+        CONSOLE.print("-------------------------------------------------------------")
+        CONSOLE.print(f"Avg PSNR: {metrics_dict['psnr']}")
+        CONSOLE.print(f"Avg SSIM: {metrics_dict['ssim']}")
+        CONSOLE.print(f"Avg LPIPS: {metrics_dict['lpips']}")
 
 
 def entrypoint():
