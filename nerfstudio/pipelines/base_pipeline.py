@@ -358,14 +358,15 @@ class VanillaPipeline(Pipeline):
                 metrics_dict_list.append(metrics_dict)
                 images_dict_list.append(images_dict)
                 progress.advance(task)
+                
         # average the metrics list
-        metrics_dict = {}
-        for key in metrics_dict_list[0].keys():
-            metrics_dict[key] = float(
-                torch.mean(torch.tensor([metrics_dict[key] for metrics_dict in metrics_dict_list]))
-            )
+        # metrics_dict = {}
+        # for key in metrics_dict_list[0].keys():
+        #     metrics_dict[key] = float(
+        #         torch.mean(torch.tensor([metrics_dict[key] for metrics_dict in metrics_dict_list]))
+        #     )
         self.train()
-        return metrics_dict, images_dict_list
+        return metrics_dict_list, images_dict_list
 
     @profiler.time_function
     def get_visibility_mask(
